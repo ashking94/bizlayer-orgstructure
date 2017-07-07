@@ -50,7 +50,13 @@ public class GenerateEmployeeListHandler {
 	private void addEmployeeToList(BaseRequest baseRequest, List<Employee> lstEmployee) {
 		if (baseRequest.getData().getData() != null && !baseRequest.getData().getData().isEmpty()) {
 			for (EmployeeRequest empReq : baseRequest.getData().getData()) {
-				lstEmployee.add((Employee) empReq);
+				int managerId = -1;
+				if (empReq.getManager().getUrl() != null) {
+					String[] managerUrl = empReq.getManager().getUrl().split("/");
+					managerId = Integer.valueOf(managerUrl[managerUrl.length - 1]);
+				}
+				lstEmployee.add(new Employee(empReq.getLast_name(), empReq.getPreferred_name(),
+						Integer.valueOf(empReq.getId()), managerId));
 			}
 		}
 	}
