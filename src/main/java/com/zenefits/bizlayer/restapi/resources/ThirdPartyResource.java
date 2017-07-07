@@ -9,11 +9,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.zenefits.bizlayer.restapi.response.Employee;
+import com.zenefits.bizlayer.restapi.service.GenerateEmployeeListHandler;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-@Path("/orgstructure")
+@Path("/employees")
 @Api(value = "/v1")
 public class ThirdPartyResource {
 
@@ -21,8 +22,10 @@ public class ThirdPartyResource {
 	@Path("/{companyId}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	@ApiOperation("API for sending list of employees to client")
-	public List<Employee> getEmployeeList(@PathParam("companyId") String companyId) {
+	public List<Employee> getEmployeeList(@PathParam("companyId") String companyId) throws Exception {
 
-		return null;
+		GenerateEmployeeListHandler listGenerationService = new GenerateEmployeeListHandler(companyId);
+		return listGenerationService.generateList();
+
 	}
 }
