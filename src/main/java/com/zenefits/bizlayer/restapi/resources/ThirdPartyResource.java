@@ -31,11 +31,9 @@ public class ThirdPartyResource {
 		try {
 			GenerateEmployeeListHandler listGenerationService = new GenerateEmployeeListHandler(companyId);
 			List<Employee> lstEmployee = listGenerationService.generateList();
+			empResponse.setStatus(200);
 			if (!CollectionUtil.isNullorEmpty(lstEmployee)) {
-				empResponse.setStatus(200);
 				empResponse.setLstEmployee(lstEmployee);
-			} else {
-
 			}
 		} catch (ApplicationException ae) {
 			empResponse.setError(ae.getDescription());
