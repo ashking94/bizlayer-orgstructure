@@ -8,7 +8,6 @@ import com.zenefits.bizlayer.restapi.resources.ThirdPartyResource;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
@@ -45,9 +44,6 @@ public class RestApiService extends Application<RestApiConfig> {
 
 		LOGGER.info("Registering resources");
 		environment.jersey().register(new ThirdPartyResource());
-
-		LOGGER.info("Registering Exceptions");
-		environment.jersey().register(new JsonProcessingExceptionMapper(true));
 
 	}
 

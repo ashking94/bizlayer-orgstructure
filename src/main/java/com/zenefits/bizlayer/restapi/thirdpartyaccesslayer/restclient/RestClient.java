@@ -11,6 +11,9 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zenefits.bizlayer.restapi.exceptions.ApplicationException;
+import com.zenefits.bizlayer.restapi.exceptions.ExceptionType;
+
 public class RestClient {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RestClient.class);
@@ -23,7 +26,7 @@ public class RestClient {
 		this.requestHeader = requestHeader;
 	}
 
-	public String getHttp() {
+	public String getHttpResponse() throws ApplicationException {
 
 		HttpResponse httpResponse = null;
 		String response = "";
@@ -42,10 +45,12 @@ public class RestClient {
 		try {
 			httpResponse = httpClient.execute(getRequest);
 			response = EntityUtils.toString(httpResponse.getEntity());
+			LOGGER.info("Successfully obtained the data from 3rd party Api");
 			return response;
 		} catch (Exception e) {
 			LOGGER.error("Exception while hitting third party API", e);
-			return "{ error : Full }";
+			throw new ApplicationException(ExceptionType.THIRDPARTYERROR,
+					ExceptionType.THIRDPARTYERROR.toString().toLowerCase(), ExceptionType.THIRDPARTYERROR.getCode());
 		}
 
 	}

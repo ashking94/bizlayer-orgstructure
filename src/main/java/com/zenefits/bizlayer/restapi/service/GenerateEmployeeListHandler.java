@@ -2,17 +2,24 @@ package com.zenefits.bizlayer.restapi.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.zenefits.bizlayer.restapi.exceptions.ApplicationException;
+import com.zenefits.bizlayer.restapi.exceptions.ExceptionType;
 import com.zenefits.bizlayer.restapi.response.Employee;
 import com.zenefits.bizlayer.restapi.thirdpartyaccesslayer.adapter.ConnectorAdapter;
 import com.zenefits.bizlayer.restapi.thirdpartyaccesslayer.response.BaseRequest;
 import com.zenefits.bizlayer.restapi.thirdpartyaccesslayer.response.EmployeeRequest;
+import com.zenefits.bizlayer.restapi.util.CollectionUtil;
 import com.zenefits.bizlayer.restapi.util.DeserializerUtil;
+import com.zenefits.bizlayer.restapi.util.StringUtil;
 
 public class GenerateEmployeeListHandler {
 
-	// private static final Logger LOGGER =
-	// LoggerFactory.getLogger(GenerateEmployeeListHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GenerateEmployeeListHandler.class);
 
 	private String url;
 	private ConnectorAdapter connectorAdapter;
@@ -22,7 +29,7 @@ public class GenerateEmployeeListHandler {
 		this.connectorAdapter = new ConnectorAdapter("Bearer UFrtE725SeWv0QZrUHPk");
 	}
 
-	public List<Employee> generateList() throws Exception {
+	public List<Employee> generateList() throws ApplicationException {
 
 		boolean callAgain = true;
 		String response = null;
@@ -31,19 +38,31 @@ public class GenerateEmployeeListHandler {
 
 		while (callAgain) {
 			response = connectorAdapter.getThirdPartyResponse(url);
-			if (response != null && !response.isEmpty()) {
+			if (!StringUtil.isNullorEmpty(response)) {
 				baseRequest = DeserializerUtil.deserialize(response);
-				addEmployeeToList(baseRequest, lstEmployee);
-				if (baseRequest.getData().getNext_url() != null && !(baseRequest.getData().getNext_url().isEmpty())) {
-					callAgain = true;
-					url = baseRequest.getData().getNext_url();
+				if (baseRequest.getStatus() == 200 || StringUtil.isNullorEmpty(baseRequest.getError())) {
+					addEmployeeToList(baseRequest, lstEmployee);
+					if (baseRequest.getData().getNext_url() != null
+							&& !(baseRequest.getData().getNext_url().isEmpty())) {
+						callAgain = true;
+						url = baseRequest.getData().getNext_url();
+					} else {
+						callAgain = false;
+					}
 				} else {
-					callAgain = false;
+					LOGGER.error("3rd Party Api response code is not 200");
+					throw new ApplicationException(ExceptionType.RESPONSEERROR,
+							StringUtil.isNullorEmpty(baseRequest.getError()) == true
+									? ExceptionType.RESPONSEERROR.toString().toLowerCase() : baseRequest.getError(),
+							baseRequest.getStatus());
 				}
+
 			}
 		}
 		fillReporteesInEmployee(lstEmployee);
-		return lstEmployee;
+
+		return lstEmployee.stream().filter(e -> !"Admin".equalsIgnoreCase(e.getPreferredName()))
+				.collect(Collectors.toList());
 
 	}
 
@@ -62,14 +81,18 @@ public class GenerateEmployeeListHandler {
 	}
 
 	private void fillReporteesInEmployee(List<Employee> lstEmployee) {
-		for (Employee emp : lstEmployee) {
-			if (emp.getManagerId() != -1) {
-				Employee manager = lstEmployee.stream().filter(e -> e.getId() == emp.getManagerId()).findFirst().get();
-				if (manager.getReportees() == null)
-					manager.setReportees(new ArrayList<>());
-				manager.getReportees().add(emp.getId());
+		if (!CollectionUtil.isNullorEmpty(lstEmployee)) {
+			for (Employee emp : lstEmployee) {
+				if (emp.getManagerId() != -1) {
+					Employee manager = lstEmployee.stream().filter(e -> e.getId() == emp.getManagerId()).findFirst()
+							.get();
+					if (manager.getReportees() == null)
+						manager.setReportees(new ArrayList<>());
+					manager.getReportees().add(emp.getId());
+				}
 			}
 		}
+
 	}
 
 }

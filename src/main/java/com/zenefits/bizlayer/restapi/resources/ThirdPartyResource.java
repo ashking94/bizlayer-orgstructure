@@ -8,24 +8,39 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.zenefits.bizlayer.restapi.exceptions.ApplicationException;
+import com.zenefits.bizlayer.restapi.response.EmpResponse;
 import com.zenefits.bizlayer.restapi.response.Employee;
 import com.zenefits.bizlayer.restapi.service.GenerateEmployeeListHandler;
+import com.zenefits.bizlayer.restapi.util.CollectionUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @Path("/employees")
-@Api(value = "/v1")
+@Api(value = "/orgstructure")
 public class ThirdPartyResource {
 
 	@GET
 	@Path("/{companyId}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	@ApiOperation("API for sending list of employees to client")
-	public List<Employee> getEmployeeList(@PathParam("companyId") String companyId) throws Exception {
+	public EmpResponse getEmployeeList(@PathParam("companyId") String companyId) throws Exception {
 
-		GenerateEmployeeListHandler listGenerationService = new GenerateEmployeeListHandler(companyId);
-		return listGenerationService.generateList();
+		EmpResponse empResponse = new EmpResponse();
+		try {
+			GenerateEmployeeListHandler listGenerationService = new GenerateEmployeeListHandler(companyId);
+			List<Employee> lstEmployee = listGenerationService.generateList();
+			if (!CollectionUtil.isNullorEmpty(lstEmployee)) {
+				empResponse.setStatus(200);
+				empResponse.setLstEmployee(lstEmployee);
+			} else {
 
+			}
+		} catch (ApplicationException ae) {
+			empResponse.setError(ae.getDescription());
+			empResponse.setStatus(ae.getErrorcode());
+		}
+		return empResponse;
 	}
 }
