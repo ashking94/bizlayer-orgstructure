@@ -42,7 +42,7 @@ public class GenerateEmployeeListHandler {
 				}
 			}
 		}
-
+		fillReporteesInEmployee(lstEmployee);
 		return lstEmployee;
 
 	}
@@ -57,6 +57,17 @@ public class GenerateEmployeeListHandler {
 				}
 				lstEmployee.add(new Employee(empReq.getLast_name(), empReq.getPreferred_name(),
 						Integer.valueOf(empReq.getId()), managerId));
+			}
+		}
+	}
+
+	private void fillReporteesInEmployee(List<Employee> lstEmployee) {
+		for (Employee emp : lstEmployee) {
+			if (emp.getManagerId() != -1) {
+				Employee manager = lstEmployee.stream().filter(e -> e.getId() == emp.getManagerId()).findFirst().get();
+				if (manager.getReportees() == null)
+					manager.setReportees(new ArrayList<>());
+				manager.getReportees().add(emp.getId());
 			}
 		}
 	}

@@ -12,7 +12,7 @@ public class Employee {
 
 	private int managerId;
 
-	private List<Employee> reportees;
+	private List<Integer> reportees;
 
 	public Employee(String lastName, String preferredName, int id, int managerId) {
 		this.lastName = lastName;
@@ -53,11 +53,11 @@ public class Employee {
 		this.managerId = managerId;
 	}
 
-	public List<Employee> getReportees() {
+	public List<Integer> getReportees() {
 		return reportees;
 	}
 
-	public void setReportees(List<Employee> reportees) {
+	public void setReportees(List<Integer> reportees) {
 		this.reportees = reportees;
 	}
 
